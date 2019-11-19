@@ -16,15 +16,9 @@ namespace VkBirthdayApp
         private string _login;
         private ulong _appKey;
         private List<User> _friendList;
+        
+        private VkApi api = new VkApi();
 
-        
-        
-        public string Password { get => _password; set => _password = value; }
-        public string Login { get => _login; set => _login = value; }
-        public ulong AppKey { get => _appKey; set => _appKey = value; }
-        public List<User> FriendList { get => _friendList; set => _friendList = value; }
-        
-        public VkApi api = new VkApi();
         /// <summary>
         /// Makes auth in vk.com using AppID, Login and Password
         /// </summary>
@@ -69,7 +63,7 @@ namespace VkBirthdayApp
         /// </summary>
         public void RefreshFriendList()
         {
-            FriendList = GetFriendList(); 
+           _friendList = GetFriendList(); 
         }
         /// <summary>
         /// Forming the greetings messages using your friend name
@@ -111,7 +105,7 @@ namespace VkBirthdayApp
         public async void  CheckBirthday()
         {
             RefreshFriendList();
-            foreach(var friend in FriendList)
+            foreach(var friend in _friendList)
             {
                 if (friend.BirthDate == DateTime.Now.ToShortDateString().Substring(0, 5))
                 {
@@ -120,6 +114,13 @@ namespace VkBirthdayApp
             }
             var Time = (DateTime.Now.AddDays(1) - DateTime.Now).TotalMilliseconds;
             await Task.Run(() => Thread.Sleep(Convert.ToInt32(Time)));
+        }
+
+        public VKBysLogic(string Password,string Login, ulong AppKey)
+        {
+            _password = Password;
+            _login = Login;
+            _appKey = AppKey;
         }
         
     }
