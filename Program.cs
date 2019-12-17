@@ -81,8 +81,11 @@ namespace VkBirthdayApp
                 try
                 {
                     Vk.Auth();
-                    IsAuthed = true;
-                    Console.WriteLine("Успешный вход\n");
+                    IsAuthed =Vk.IsAuthed;
+                    if(IsAuthed)
+                    {
+                        Console.WriteLine("Успешный вход\n");
+                    }
                 }
                 catch
                 {

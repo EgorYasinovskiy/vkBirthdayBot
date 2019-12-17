@@ -16,7 +16,7 @@ namespace VkBirthdayApp
         private string _password;
         private string _login;
         private VkNet.Utils.VkCollection<User> _friendList;
-
+        public bool IsAuthed { get; private set; }
         static ServiceCollection services = new ServiceCollection();
         private static IVkApi api;
         /// <summary>
@@ -39,9 +39,10 @@ namespace VkBirthdayApp
                         return Console.ReadLine();
                     }
                 });
+                IsAuthed = api.IsAuthorized;
             }
             catch
-            {
+            {   // TODO: Проверка подключение к интернету.
                 Console.WriteLine("Ошибка. Попытайтесь снова");
             }
         }
