@@ -8,6 +8,7 @@ using VkNet.Enums.Filters;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using VkNet;
+using System.Net.Sockets;
 
 namespace VkBirthdayApp
 {
@@ -26,7 +27,7 @@ namespace VkBirthdayApp
         {
             services.AddAudioBypass();
             api = new VkApi(services);
-            Console.WriteLine("Авторизация...\n\n");
+            Console.WriteLine("Авторизация...\n");
             try
             {
                 api.Authorize(new VkNet.Model.ApiAuthParams
@@ -42,8 +43,21 @@ namespace VkBirthdayApp
                 IsAuthed = api.IsAuthorized;
             }
             catch
-            {   // TODO: Проверка подключение к интернету.
-                Console.WriteLine("Ошибка. Попытайтесь снова");
+            {   // TODO: Проверка подключение к интернету. - Сделано
+                if(CheckConnect())
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Неверный логин или пароль!\n");
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Нет соединения с интернетом.");
+                    Console.ResetColor();
+                    Console.WriteLine("Проверьте настройки вашего сетевого подключения\n");
+                }
+                
             }
         }
         /// <summary>
@@ -52,7 +66,7 @@ namespace VkBirthdayApp
         /// <returns> Список user</returns>
         public VkNet.Utils.VkCollection<User> GetFriendList()
         {
-            Console.WriteLine("Getting friendlist\n\n");
+            Console.WriteLine("Получаю список друзей\n");
 
             return api.Friends.Get(new VkNet.Model.RequestParams.FriendsGetParams { UserId = api.UserId, Fields = ProfileFields.BirthDate | ProfileFields.FirstName | ProfileFields.Sex });
 
@@ -75,7 +89,7 @@ namespace VkBirthdayApp
             }
             else
             {
-                return string.Format("С днем рождения,{0}!!!Хочу пожелать тебе всео наилучшего," +
+                return string.Format("С днем рождения,{0}!!!Хочу пожелать тебе всего наилучшего," +
                     " побольше счастья, здоровья и конечно же денег. Будь счастлив в этот день!", friend.FirstName);
             }
         }
@@ -92,7 +106,9 @@ namespace VkBirthdayApp
                 Message = GetGreetingMessage(friend)
 
             });
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Сообщение отправлено\n\n");
+            Console.ResetColor();
         }
         /// <summary>
         /// Каждый день проверяет, наступил ли у кого день рождения
@@ -102,10 +118,8 @@ namespace VkBirthdayApp
         {
             while (IsStarted)
             {
-                Console.WriteLine("Начало проверки\n\n");
                 _friendList = GetFriendList();
-                Console.WriteLine(_friendList.Count);
-                Console.WriteLine(_friendList);
+                Console.WriteLine(_friendList.Count + " друзей");
                 int greeted = 0;
                 foreach (var friend in _friendList)
                 {
@@ -113,27 +127,31 @@ namespace VkBirthdayApp
                     {
                         SendGreetings(friend);
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("Друг {0} поздравлен!", friend.FirstName);
+                        Console.WriteLine("Друг {0} поздравлен!\n", friend.FirstName);
                         Console.ResetColor();
                         greeted++;
                     }
                 }
                 if (greeted == 0)
                 {
-                    Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.WriteLine("Никто сегодня не празднует ДР :(");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("Никто сегодня не празднует ДР :(\n");
                     Console.ResetColor();
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("Сегодня поздравили {0} человек(а)", greeted);
+                    Console.WriteLine("Сегодня поздравили {0} человек(а)\n", greeted);
                     Console.ResetColor();
                 }
 
                 var Time = (DateTime.Now.AddDays(1).Date - DateTime.Now).TotalMilliseconds;
-                
-                Console.WriteLine("Жду до следующего дня {0} часов", Time/(1000*60*60));
+
+                Console.Write("Жду до следующего дня ");
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.Write(Math.Round((Time / (1000 * 60 * 60)), MidpointRounding.AwayFromZero));
+                Console.ResetColor();
+                Console.Write(" часов\n\n");
                 await Task.Run(() => Thread.Sleep(Convert.ToInt32(Time)));
             }
         }
@@ -142,6 +160,29 @@ namespace VkBirthdayApp
         {
             _password = Password;
             _login = Login;
+        }
+        public bool CheckConnect()
+        {
+
+            try
+            {
+                System.Net.HttpWebRequest reqFP = (System.Net.HttpWebRequest)System.Net.WebRequest.Create("https://vk.com");
+                System.Net.HttpWebResponse rspFP = (System.Net.HttpWebResponse)reqFP.GetResponse();
+                if (rspFP.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    rspFP.Close();
+                    return true;
+                }
+                else
+                {
+                    rspFP.Close();
+                    return false;
+                }
+            }
+            catch (System.Net.WebException)
+            {
+                return false;
+            }
         }
     }
 }
