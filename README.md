@@ -14,5 +14,5 @@
 - Add **[ignore]** function. If any friend from the list of your friends will be listed in the ignore list then he will not be congratulated by the bot
 - Add **[addgreeting]** function. For each friend, you can write your personal greeting that will be sent to him instead of a template text.
 - Connect the application to database and server. For every user create table with him friends. For every friends in user friendlist add the text field. Default it will be filled with template text. If user added greeting to this friend it will be rewritten.
-- Create the Windows Forms app with sourcec of this project 
+- Create the Windows Forms app with sources of this project 
 - Create the Android app with sources of this project using **[Xamarin](https://en.wikipedia.org/wiki/Xamarin)**
